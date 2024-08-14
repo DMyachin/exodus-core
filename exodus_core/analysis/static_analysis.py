@@ -152,7 +152,7 @@ class StaticAnalysis:
             return set()
 
         apk_regex = re.compile(r'.*\.apk')
-        class_regex = re.compile(r'classes.*\.dex')
+        class_regex = re.compile(r'classes.*\.dex$')
         classes = set()
 
         try:

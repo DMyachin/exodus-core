@@ -43,9 +43,9 @@ def which(program):
             buildTools = os.path.join(env_val, 'build-tools')
             if os.path.isdir(buildTools):
                 for btDir in sorted(os.listdir(buildTools), reverse=True): # 35.0.0, 34.0.3, 34.0.1, ...
-                    prog = os.path.join(buildTools, btDir, program)
-                    if is_exe(prog):
-                        return prog
+                    exe_file = os.path.join(buildTools, btDir, program)
+                    if is_exe(exe_file):
+                        return exe_file
 
     return None
 

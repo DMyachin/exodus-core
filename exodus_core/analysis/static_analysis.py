@@ -4,21 +4,50 @@ import logging
 import os
 import re
 import subprocess
+import sys
 import zipfile
 from collections import namedtuple
-from future.moves import sys
 from hashlib import sha256, sha1
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 
 import dhash
 import requests
 import six
-from androguard.core.bytecodes import axml
-from androguard.core.bytecodes.apk import APK
-from cryptography.x509.name import _SENTINEL, ObjectIdentifier, _NAMEOID_DEFAULT_TYPE, _ASN1Type, NameAttribute
+from androguard.core import axml
+from androguard.core.apk import APK
+from androguard.util import set_log
+from cryptography.x509.name import ObjectIdentifier, _NAMEOID_DEFAULT_TYPE, _ASN1Type, NameAttribute
 from PIL import Image
 
 PHASH_SIZE = 8
+
+set_log("INFO")
+
+
+def which(program):
+    def is_exe(fpath):
+        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+    fpath, fname = os.path.split(program)
+    if fpath:
+        if is_exe(program):
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            exe_file = os.path.join(path, program)
+            if is_exe(exe_file):
+                return exe_file
+        # if program is not in the path, check the $ANDROID_HOME/build-tools/{version}/ directory
+        env_val = os.getenv('ANDROID_HOME')
+        if env_val:
+            buildTools = os.path.join(env_val, 'build-tools')
+            if os.path.isdir(buildTools):
+                for btDir in sorted(os.listdir(buildTools), reverse=True): # 35.0.0, 34.0.3, 34.0.1, ...
+                    prog = os.path.join(buildTools, btDir, program)
+                    if is_exe(prog):
+                        return prog
+
+    return None
 
 
 def get_td_url():
@@ -164,6 +193,11 @@ class StaticAnalysis:
                             classes = classes.union(StaticAnalysis._get_embedded_classes(apk_fp, depth + 1))
 
                     elif class_regex.search(info.filename):
+                        if which('dexdump') is None:
+                            logging.error("Unable to find dexdump executable, please install it.")
+                            logging.error("On Debian-like OS, run sudo apt-get install dexdump")
+                            sys.exit(1)
+
                         apk_zip.extract(info, tmp_dir)
                         run = subprocess.check_output(['dexdump', f'{tmp_dir}/{info.filename}'])
                         classes = classes.union(set(re.findall(r'[A-Z]+((?:\w+\/)+\w+)', run.decode(errors='ignore'))))
@@ -399,14 +433,14 @@ class StaticAnalysis:
     def get_certificates(self):
         certificates = []
 
-        def _my_name_init(self, oid, value, _type=_SENTINEL):
+        def _my_name_init(self, oid, value, _type):
             if not isinstance(oid, ObjectIdentifier):
                 raise TypeError("oid argument must be an ObjectIdentifier instance.")
             if not isinstance(value, six.text_type):
                 raise TypeError("value argument must be a text type.")
             if len(value) == 0:
                 raise ValueError("Value cannot be an empty string")
-            if _type == _SENTINEL:
+            if _type is None:
                 _type = _NAMEOID_DEFAULT_TYPE.get(oid, _ASN1Type.UTF8String)
             if not isinstance(_type, _ASN1Type):
                 raise TypeError("_type must be from the _ASN1Type enum")

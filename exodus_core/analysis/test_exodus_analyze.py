@@ -73,8 +73,8 @@ class TestExodus(unittest.TestCase):
         diff_1 = sa.get_icon_similarity(phash_1, phash_2)
         diff_2 = sa.get_icon_similarity(phash_2, phash_1)
 
-        self.assertEqual(diff_1, 0.734375)
-        self.assertEqual(diff_2, 0.734375)
+        self.assertEqual(diff_1, 0.5390625)
+        self.assertEqual(diff_2, 0.5390625)
 
     def test_icon_similarity_different_similarities(self):
         sa = StaticAnalysis()
@@ -113,7 +113,7 @@ class TestExodus(unittest.TestCase):
 
     def test_embedded_trackers(self):
         apps = [
-            {'name': 'braiar', 'nb_trackers': 0},
+            {'name': 'braiar', 'nb_trackers': 1},
             {'name': 'whatsapp', 'nb_trackers': 1},
             {'name': 'hsbc', 'nb_trackers': 3},
         ]

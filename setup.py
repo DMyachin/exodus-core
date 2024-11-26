@@ -1,38 +1,8 @@
 #!/usr/bin/env python
 
-import os
 import sys
 
 from setuptools import setup, find_packages
-
-
-def is_exe(fpath):
-    return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
-
-
-def which(program):
-    fpath, fname = os.path.split(program)
-    if fpath:
-        if is_exe(program):
-            return program
-    else:
-        for path in os.environ["PATH"].split(os.pathsep):
-            exe_file = os.path.join(path, program)
-            if is_exe(exe_file):
-                return exe_file
-        return checkAndroidSdkDir(program)
-
-
-def checkAndroidSdkDir(program):
-    for env in ('ANDROID_HOME', 'ANDROID_SDK_ROOT'):
-        env_val = os.getenv(env)
-        if env_val:
-            buildTools = os.path.join(env_val, 'build-tools')
-            if os.path.isdir(buildTools):
-                for btDir in sorted(os.listdir(buildTools), reverse=True):
-                    prog = os.path.join(buildTools, btDir, program)
-                    if is_exe(prog):
-                        return prog
 
 
 if sys.version_info.major == 3 and sys.version_info.minor < 3:
@@ -43,25 +13,20 @@ if sys.platform == 'darwin' or sys.platform == 'win32':
     print("Unfortunately, we do not support your platform %s" % sys.platform)
     sys.exit(1)
 
-if which('dexdump') is None:
-    print("Unable to find dexdump executable, please install it.")
-    print("On Debian-like OS, run sudo apt-get install dexdump")
-    sys.exit(1)
-
 install_requires = [
-    'androguard==3.3.5',
-    'cryptography==3.3.2',
-    'dhash==1.3',
+    'androguard==4.1.1',
+    'cryptography==43.0.1',
+    'dhash==1.4',
     'jellyfish==0.5.6',
-    'Pillow==9.3.0',
-    'requests>=2.26,<2.28',
+    'Pillow==10.3.0',
+    'requests>=2.26,<2.33',
     'six==1.15.0',
     'traitlets==4.3.2'
 ]
 
 setup(
     name='exodus_core',
-    version='1.3.8',
+    version='1.3.13',
     description='Core functionality of εxodus',
     author='Exodus Privacy',
     author_email='contact@exodus-privacy.eu.org',
